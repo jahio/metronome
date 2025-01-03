@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Metronome</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            background: #2a2a2a;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .row {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+        }
+        select, button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 6px;
+            background: #3a3a3a;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        select {
+            min-width: 200px;
+        }
+        select:hover, button:hover {
+            background: #4a4a4a;
+        }
+        button {
+            background: linear-gradient(135deg, #666666, #444444);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            background: linear-gradient(135deg, #777777, #555555);
+            transform: translateY(-1px);
+        }
+        .metronome-container {
+            width: 100%;
+            max-width: 300px;
+            margin: 2rem auto;
+        }
+        @media (max-width: 480px) {
+            .row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+        @keyframes swing {
+            0% { transform: rotate(-30deg); }
+            50% { transform: rotate(30deg); }
+            100% { transform: rotate(-30deg); }
+        }
+        .pendulum.active {
+            animation: swing;
+            animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+            transform-origin: 50% 95%;
+            animation-iteration-count: infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; margin-bottom: 2rem;">Metronome</h1>
+        
+        <div class="metronome-container">
+            <svg viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- Gradients for metallic effects -->
+                    <linearGradient id="baseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#888888"/>
+                        <stop offset="50%" style="stop-color:#666666"/>
+                        <stop offset="100%" style="stop-color:#444444"/>
+                    </linearGradient>
+                    <linearGradient id="metalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#999999"/>
+                        <stop offset="50%" style="stop-color:#777777"/>
+                        <stop offset="100%" style="stop-color:#555555"/>
+                    </linearGradient>
+                    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                        <feOffset dx="2" dy="2"/>
+                        <feComponentTransfer>
+                            <feFuncA type="linear" slope="0.3"/>
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- Base -->
+                <path d="M60 250 L140 250 C150 250 160 260 160 270 L160 290 C160 295 155 300 150 300 L50 300 C45 300 40 295 40 290 L40 270 C40 260 50 250 60 250" 
+                      fill="url(#baseGradient)" filter="url(#shadow)"/>
+
+                <!-- Modern body casing -->
+                <path d="M50 260 L150 260 L150 280 L50 280 Z" 
+                      fill="url(#metalGradient)" filter="url(#shadow)"/>
+
+                <!-- Digital display panel -->
+                <rect x="70" y="265" width="60" height="10" rx="2" 
+                      fill="#222222" stroke="#333333" stroke-width="1"/>
+
+                <!-- Pendulum assembly -->
+                <g class="pendulum">
+                    <!-- Pendulum rod - sleek design -->
+                    <path d="M98 275 L98 100 C98 95 102 95 102 100 L102 275" 
+                          fill="url(#metalGradient)"/>
+                    
+                    <!-- Weight - modern design -->
+                    <path d="M90 150 L110 150 C115 150 115 155 115 160 L115 190 C115 195 110 200 105 200 L95 200 C90 200 85 195 85 190 L85 160 C85 155 85 150 90 150" 
+                          fill="url(#metalGradient)" filter="url(#shadow)"/>
+                    
+                    <!-- Accent lines on weight -->
+                    <path d="M88 165 L112 165" stroke="#444444" stroke-width="1"/>
+                    <path d="M88 175 L112 175" stroke="#444444" stroke-width="1"/>
+                    <path d="M88 185 L112 185" stroke="#444444" stroke-width="1"/>
+                </g>
+            </svg>
+        </div>
+
+        <div class="controls">
+            <div class="row">
+                <label for="timeUnit">Time Unit:</label>
+                <select id="timeUnit">
+                    <option value="bpm">BPM</option>
+                    <option value="ms">Milliseconds</option>
+                </select>
+            </div>
+            <div class="row">
+                <label for="presetSpeed">Speed:</label>
+                <select id="presetSpeed">
+                    <option value="30">30 BPM - Grave</option>
+                    <option value="40">40 BPM - Largo</option>
+                    <option value="60">60 BPM - Larghetto</option>
+                    <option value="76">76 BPM - Adagio</option>
+                    <option value="108">108 BPM - Andante</option>
+                    <option value="120" selected>120 BPM - Moderato</option>
+                    <option value="168">168 BPM - Vivace</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <button id="startStop">Start</button>
+        </div>
+    </div>
+
+    <script>
+        // Create audio context and buffer for the click sound
+        let audioContext;
+        let clickBuffer;
+
+        // Initialize audio context and create click sound
+        async function initAudio(sound="wood") {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            const sampleRate = audioContext.sampleRate;
+            const duration = 0.1;
+            const numSamples = duration * sampleRate;
+            
+            clickBuffer = audioContext.createBuffer(1, numSamples, sampleRate);
+            const channelData = clickBuffer.getChannelData(0);
+            
+            for (let i = 0; i < numSamples; i++) {
+                const t = i / sampleRate;
+                const sample = Math.sin(2 * Math.PI * 100 * t) * Math.exp(-15 * t) * 1.25 +
+                             Math.sin(2 * Math.PI * 150 * t) * Math.exp(-20 * t) * 0.9;
+                channelData[i] = sample;
+            }
+        }
+
+        const sounds = {
+            wood: {
+                sinewave_freq_one: 100, // Determines pitch (Frequency of the first sine wave)
+                sinewave_freq_two: 150, // Frequency of the second sine wave
+                decay_rate_one: -15,    // How fast sound fades out (Decay rate of the first sine wave)
+                decay_rate_two: -20,    // Decay rate of the second sine wave
+                amplitude_one: 1.2,     // How loud? (Volume of the first sine wave)
+                amplitude_two: 0.9      // Volume of the second sine wave
+            },
+            balanced: {
+                sinewave_freq_one: 1000, // Determines pitch (Frequency of the first sine wave)
+                sinewave_freq_two: 1500, // Frequency of the second sine wave
+                decay_rate_one: -25,    // How fast sound fades out (Decay rate of the first sine wave)
+                decay_rate_two: -30,    // Decay rate of the second sine wave
+                amplitude_one: 1.0,     // How loud? (Volume of the first sine wave)
+                amplitude_two: 0.8      // Volume of the second sine wave
+            },
+            high: {
+                sinewave_freq_one: 2500, // Determines pitch (Frequency of the first sine wave)
+                sinewave_freq_two: 3500, // Frequency of the second sine wave
+                decay_rate_one: -70,    // How fast sound fades out (Decay rate of the first sine wave)
+                decay_rate_two: -80,    // Decay rate of the second sine wave
+                amplitude_one: 0.9,     // How loud? (Volume of the first sine wave)
+                amplitude_two: 0.7      // Volume of the second sine wave
+            },
+            bass: {
+                sinewave_freq_one: 80, // Determines pitch (Frequency of the first sine wave)
+                sinewave_freq_two: 120, // Frequency of the second sine wave
+                decay_rate_one: -10,    // How fast sound fades out (Decay rate of the first sine wave)
+                decay_rate_two: -15,    // Decay rate of the second sine wave
+                amplitude_one: 1.5,     // How loud? (Volume of the first sine wave)
+                amplitude_two: 1.2      // Volume of the second sine wave
+            },
+            soft: {
+                sinewave_freq_one: 500, // Determines pitch (Frequency of the first sine wave)
+                sinewave_freq_two: 700, // Frequency of the second sine wave
+                decay_rate_one: -30,    // How fast sound fades out (Decay rate of the first sine wave)
+                decay_rate_two: -40,    // Decay rate of the second sine wave
+                amplitude_one: 0.6,     // How loud? (Volume of the first sine wave)
+                amplitude_two: 0.4      // Volume of the second sine wave
+            },
+            sharp: {
+                sinewave_freq_one: 2000, // Determines pitch (Frequency of the first sine wave)
+                sinewave_freq_two: 3000, // Frequency of the second sine wave
+                decay_rate_one: -50,    // How fast sound fades out (Decay rate of the first sine wave)
+                decay_rate_two: -60,    // Decay rate of the second sine wave
+                amplitude_one: 1.0,     // How loud? (Volume of the first sine wave)
+                amplitude_two: 0.8      // Volume of the second sine wave
+            }
+
+        };
+
+        function playClick() {
+            if (!audioContext) return;
+            
+            const source = audioContext.createBufferSource();
+            source.buffer = clickBuffer;
+            
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = 0.5;
+            
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            source.start();
+        }
+
+        const startStopButton = document.getElementById('startStop');
+        const timeUnitSelect = document.getElementById('timeUnit');
+        const presetSpeedSelect = document.getElementById('presetSpeed');
+        const pendulum = document.querySelector('.pendulum');
+
+        let isPlaying = false;
+        let intervalId = null;
+
+        function getIntervalTime() {
+            const value = parseInt(presetSpeedSelect.value);
+            let intervalTime;
+            // For BPM, convert to milliseconds. Each beat is one full swing (one period)
+            if (timeUnitSelect.value === 'bpm') {
+                intervalTime = Math.round((60 / value)  * 1000); // Here's our BPM to milliseconds conversion
+            }
+            else {
+                intervalTime = value * 2; // This is for milliseconds
+            }
+            return intervalTime;
+        }
+
+        function updatePresets() {
+            const isMs = timeUnitSelect.value === 'ms';
+            presetSpeedSelect.innerHTML = '';
+            
+            const presets = isMs ? [
+                { value: 2000, label: '2000ms (2 Seconds)' },
+                { value: 1750, label: '1750ms' },
+                { value: 1500, label: '1500ms' },
+                { value: 1250, label: '1250ms' },
+                { value: 1000, label: '1000ms (1 Second)' },
+                { value: 750, label: '750ms' },
+                { value: 500, label: '500ms (Half Second)' },
+                { value: 250, label: '250ms (Quarter Second)' }
+            ] : [
+                { value: 10, label: '10 BPM' },
+                { value: 20, label: '20 BPM' },
+                { value: 30, label: '30 BPM' },
+                { value: 40, label: '40 BPM' },
+                { value: 60, label: '60 BPM' },
+                { value: 76, label: '76 BPM' },
+                { value: 108, label: '108 BPM' },
+                { value: 120, label: '120 BPM' },
+                { value: 168, label: '168 BPM' }
+            ];
+
+            presets.forEach(preset => {
+                const option = document.createElement('option');
+                option.value = preset.value;
+                option.textContent = preset.label;
+                presetSpeedSelect.appendChild(option);
+            });
+        }
+
+        function updatePendulumAnimation() {
+            const interval = getIntervalTime();
+            pendulum.style.animationDuration = interval + 'ms';
+        }
+
+        function startMetronome() {
+            stopMetronome();
+
+            if (!audioContext) {
+                initAudio();
+            }        
+
+            const interval = getIntervalTime();
+            playClick();
+            
+            pendulum.classList.add('active');
+            updatePendulumAnimation();
+            
+            // The click sound should happen right when the metronome swing hits either side
+            const startTime = audioContext.currentTime;
+            const halfInterval = interval / 2; // Click happens twice per full swing
+            
+            intervalId = setInterval(() => {
+                playClick();
+            }, halfInterval);
+            
+            isPlaying = true;
+            startStopButton.textContent = 'Stop';
+        }
+
+        function stopMetronome() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            pendulum.classList.remove('active');
+            isPlaying = false;
+            startStopButton.textContent = 'Start';
+        }
+
+        startStopButton.addEventListener('click', () => {
+            if (isPlaying) {
+                stopMetronome();
+            } else {
+                startMetronome();
+            }
+        });
+
+        timeUnitSelect.addEventListener('change', () => {
+            updatePresets();
+            if (isPlaying) {
+                stopMetronome();
+                // startMetronome();
+            }
+        });
+
+        presetSpeedSelect.addEventListener('change', () => {
+            if (isPlaying) {
+                stopMetronome();
+                // startMetronome();
+            }
+        });
+
+        updatePresets();
+    </script>
+</body>
+</html>
